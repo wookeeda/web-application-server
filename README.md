@@ -15,22 +15,38 @@
 * 각 요구사항을 구현하는 것이 중요한 것이 아니라 구현 과정을 통해 학습한 내용을 인식하는 것이 배움에 중요하다. 
 
 ### 요구사항 1 - http://localhost:8080/index.html로 접속시 응답
-* 
+* 요청을 일이리 파싱하는 것은 고된 작업이다.
 
 ### 요구사항 2 - get 방식으로 회원가입
-* 
+* get으로 회원가입을?
 
 ### 요구사항 3 - post 방식으로 회원가입
-* 
+* 여윽시 회원가입은 post방식으로 해야지.
+* 그런데 왜 requestbody 읽을 때, 기존방식으로 읽으면 안되는건가..
+* readLine이 아니라, read로 읽어야하는 걸까.
+* request body는 line이 없나.
+* 즉, read() 범위로 값을 꺼내와야 하는 듯.
+* HTTP 완벽 가이드. 일어볼까함.
 
 ### 요구사항 4 - redirect 방식으로 이동
-* 
+* http status code 이용
+* status code 302와 location header로 화면 이동.
+* 실은 재요청.
 
 ### 요구사항 5 - cookie
-* 
+* setCookie
+* path=/ 추가할 것.
+* path 하위로 다 먹기때문에, logined같은 경우는 /로 전체에 적용
 
 ### 요구사항 6 - stylesheet 적용
-* 
+* css 요청 여부 파악하려다보니
+* request header 추출하는 로직을 조금 손보게 됨.
 
 ### heroku 서버에 배포 후
 * 
+
+### slf4j
+* log message에서 불필요한 + 연산을 제거하기 위해서 나온것이 {}
+* ex) log.debug("log test {}, test2 {}", getId(), getName());
+* 로그레벨에 따라 메세지 + 연산을 수행 여부를 판단한다.
+* 즉, 이렇게 사용하자.

@@ -3,17 +3,24 @@ package webserver;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import db.DataBase;
+import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class WebServer {
     private static final Logger log = LoggerFactory.getLogger(WebServer.class);
-    private static final int DEFAULT_PORT = 8080;
+    private static final int DEFAULT_PORT = 8090;
 
     public static void main(String args[]) throws Exception {
         int port = 0;
         if (args == null || args.length == 0) {
             port = DEFAULT_PORT;
+
+            DataBase.addUser(new User("1", "1", "1", "1@1"));
+            DataBase.addUser(new User("2", "2", "2", "2@2"));
+            DataBase.addUser(new User("3", "3", "3", "3@3"));
+
         } else {
             port = Integer.parseInt(args[0]);
         }
