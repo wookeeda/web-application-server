@@ -4,10 +4,7 @@ import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import db.DataBase;
 import model.User;
@@ -30,39 +27,45 @@ public class RequestHandler extends Thread {
                 connection.getPort());
 
         try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream();
-             BufferedReader br = new BufferedReader(new InputStreamReader(in));
+             BufferedReader br = new BufferedReader(new InputStreamReader(in, "UTF-8"));
         ) {
             // TODO 사용자 요청에 대한 처리는 이 곳에 구현하면 된다.
-            String line = null;
-            String method = null;
-            String url = null;
             boolean logined = false;
             int contentLength = 0;
             boolean isCss = false;
-            while ((line = br.readLine()) != null) {
-                System.out.println(line);
-                if (line.contains("HTTP")) {
-                    String[] tokens = line.split(" ");
-                    method = tokens[0];
-                    url = tokens[1];
-                } else if (line.startsWith("Cookie")) {
-                    String cookieStr = line.split(": ")[1];
-                    Map<String, String> cookies = HttpRequestUtils.parseCookies(cookieStr);
+
+            String line = br.readLine();
+            log.debug("[request line] : {}", line);
+            String[] tokens = line.split(" ");
+            String method = tokens[0];
+            String url = tokens[1];
+
+            Map<String, String> headers = new HashMap<>();
+
+            while ((line = br.readLine()) != null && !"".equals(line)) {
+                log.debug("        headers : {}", line);
+                tokens = line.split(": ");
+                headers.put(tokens[0], tokens[1]);
+            }
+
+            if (headers.containsKey("cookie")) {
+                String cookieStr = headers.get("cookie");
+                Map<String, String> cookies = HttpRequestUtils.parseCookies(cookieStr);
+                if (cookies.containsKey("logined")) {
                     logined = Boolean.parseBoolean(cookies.get("logined"));
-                    break;
-                } else if (line.startsWith("Content-Length")) {
-                    contentLength = Integer.parseInt(line.split(" ")[1]);
-                } else if (line.startsWith("Accept")){
-                    if(line.contains("text/css")){
-                        isCss = true;
-                    }
+                }
+            }
+            if (headers.containsKey("Accept")) {
+                String accept = headers.get("Accept");
+                if (accept.contains("text/css")) {
+                    isCss = true;
                 }
             }
 
             DataOutputStream dos = new DataOutputStream(out);
 
             if ("GET".equals(method)) {
-                if(isCss){
+                if (isCss) {
                     Path path = new File("./webapp" + url).toPath();
                     byte[] body = Files.readAllBytes(path);
                     response200HeaderWhenCss(dos, body.length);
@@ -71,7 +74,7 @@ public class RequestHandler extends Thread {
                 }
                 if (url.contains("/user/list")) {
                     if (!logined) {
-                        response302HeaderWithLocationUrl(dos, "/user/login.html");
+                        response302Header(dos, "/user/login.html");
                         return;
                     }
                     // 목록 출력
@@ -129,19 +132,15 @@ public class RequestHandler extends Thread {
                 }
             } else if ("POST".equals(method)) {
                 br.readLine();
+                String requestBody = IOUtils.readData(br, Integer.parseInt(headers.get("logined")));
+                Map<String, String> q = HttpRequestUtils.parseQueryString(requestBody);
                 if (url.contains("/user/create")) {
-
-                    String requestBody = IOUtils.readData(br, contentLength);
-                    Map<String, String> q = HttpRequestUtils.parseQueryString(requestBody);
                     User user = new User(q.get("userId"), q.get("password"), q.get("name"), q.get("email"));
 
                     DataBase.addUser(user);
-                    response302HeaderWithLocationUrl(dos, "/index.html");
+                    response302Header(dos, "/index.html");
 
                 } else if (url.contains("/user/login")) {
-                    String requestBody = IOUtils.readData(br, contentLength);
-                    Map<String, String> q = HttpRequestUtils.parseQueryString(requestBody);
-
                     String userId = q.get("userId");
                     String password = q.get("password");
 
@@ -163,21 +162,17 @@ public class RequestHandler extends Thread {
         try {
             dos.writeBytes("HTTP/1.1 302 Found \r\n");
             dos.writeBytes("Location: " + url + " \r\n");
-            dos.writeBytes("Content-Type: text/html;charset=utf-8\r\n");
             dos.writeBytes("Set-Cookie: logined=" + logined + ";path=/\r\n");
-//            dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
             dos.writeBytes("\r\n");
         } catch (IOException e) {
             log.error(e.getMessage());
         }
     }
 
-    private void response302HeaderWithLocationUrl(DataOutputStream dos, String url) {
+    private void response302Header(DataOutputStream dos, String url) {
         try {
             dos.writeBytes("HTTP/1.1 302 Found \r\n");
             dos.writeBytes("Location: " + url + " \r\n");
-            dos.writeBytes("Content-Type: text/html;charset=utf-8\r\n");
-//            dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
             dos.writeBytes("\r\n");
         } catch (IOException e) {
             log.error(e.getMessage());
@@ -194,6 +189,7 @@ public class RequestHandler extends Thread {
             log.error(e.getMessage());
         }
     }
+
     private void response200HeaderWhenCss(DataOutputStream dos, int lengthOfBodyContent) {
         try {
             dos.writeBytes("HTTP/1.1 200 OK \r\n");
