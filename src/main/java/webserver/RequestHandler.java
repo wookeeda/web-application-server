@@ -31,7 +31,6 @@ public class RequestHandler extends Thread {
         ) {
             // TODO 사용자 요청에 대한 처리는 이 곳에 구현하면 된다.
             boolean logined = false;
-            int contentLength = 0;
             boolean isCss = false;
 
             String line = br.readLine();
@@ -97,7 +96,6 @@ public class RequestHandler extends Thread {
                     }
                     Path path = new File("./webapp" + url).toPath();
                     byte[] body = Files.readAllBytes(path);
-                    int length = body.length;
                     List<String> allLines = Files.readAllLines(path);
                     for (int i = 0; i < allLines.size(); i++) {
                         String l = allLines.get(i);
@@ -131,8 +129,9 @@ public class RequestHandler extends Thread {
                     responseBody(dos, body);
                 }
             } else if ("POST".equals(method)) {
-                br.readLine();
-                String requestBody = IOUtils.readData(br, Integer.parseInt(headers.get("logined")));
+//                br.readLine();
+                int contentLength = Integer.parseInt(headers.get("Content-Length"));
+                String requestBody = IOUtils.readData(br, contentLength);
                 Map<String, String> q = HttpRequestUtils.parseQueryString(requestBody);
                 if (url.contains("/user/create")) {
                     User user = new User(q.get("userId"), q.get("password"), q.get("name"), q.get("email"));
