@@ -66,3 +66,7 @@
 * httpRequest와 httpResponse class 생성해서 기능 정리중
 * test code 추가
 * commit history 확인중
+
+### HttpRequest
+* 처음에 params를 정리하는 것은 setParams로 모으려고 했는데, 
+* get 요청의 queryString으로 setParams하는 것은 processRequestLine 에서 할 일.
