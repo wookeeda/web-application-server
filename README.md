@@ -61,3 +61,7 @@
 
 ### headers를 미리 setting 하지 말고 사용할 때 쓰자.
 * content-Length는 post 요청에서만 사용하면 되고,
+
+### refactoring...
+* httpRequest와 httpResponse class 생성해서 기능 정리중
+* test code 추가
