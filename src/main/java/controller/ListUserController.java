@@ -13,11 +13,11 @@ import java.nio.file.Files;
 import java.util.Collection;
 import java.util.List;
 
-public class ListUserController implements Controller {
+public class ListUserController extends AbstractController {
     private static final Logger log = LoggerFactory.getLogger(ListUserController.class);
 
     @Override
-    public void service(HttpRequest request, HttpResponse response) throws IOException {
+    void doGet(HttpRequest request, HttpResponse response) throws IOException {
         String path = request.getPath();
         if (!request.isLogined()) {
             response.sendRedirect("/user/login.html");
@@ -50,5 +50,6 @@ public class ListUserController implements Controller {
             body.append(line);
         }
         response.forwardBody(body.toString());
+
     }
 }
