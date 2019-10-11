@@ -77,6 +77,7 @@
 * 처음에 params를 정리하는 것은 setParams로 모으려고 했는데, 
 * get 요청의 queryString으로 setParams하는 것은 processRequestLine 에서 할 일.
 
+
 ### testcode 기반으로 개발하면
 * 버그를 빨리 찾을 수 있다.
 * 디버깅하기 쉽다.
@@ -97,3 +98,4 @@
  ### requestbody decode
  * @ 가 %40으로 입력됨
  * https://docs.oracle.com/javase/8/docs/api/java/net/URLDecoder.html
+
