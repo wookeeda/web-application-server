@@ -9,11 +9,12 @@ import util.HttpResponse;
 
 import java.io.IOException;
 
-public class LoginController implements Controller {
+public class LoginController extends AbstractController {
     private static final Logger log = LoggerFactory.getLogger(LoginController.class);
 
     @Override
-    public void service(HttpRequest request, HttpResponse response) throws IOException {
+    void doPost(HttpRequest request, HttpResponse response) throws IOException {
+
         User user = DataBase.findUserById(request.getParameter("userId"));
 
         if (user != null) {
@@ -24,4 +25,5 @@ public class LoginController implements Controller {
         }
         response.forward("/user/login_failed.html");
     }
+
 }
