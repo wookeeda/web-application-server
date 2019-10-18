@@ -2,7 +2,6 @@ package util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import webserver.RequestHandler;
 
 
 import java.io.BufferedReader;
@@ -10,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,6 +17,7 @@ public class HttpRequest {
 
 
     private static final Logger log = LoggerFactory.getLogger(HttpRequest.class);
+    private static final String JSESSIONID = "JSESSIONID";
 
     private HttpMethod method;
     private String path;
@@ -26,7 +27,7 @@ public class HttpRequest {
 
 
     public HttpRequest(InputStream in) throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(in, "UTF-8"));
+        BufferedReader br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
 
         String line = br.readLine();
         if (line == null) {
@@ -59,7 +60,7 @@ public class HttpRequest {
 
     private void setParamsOfRequestBody(BufferedReader br) throws IOException {
         int contentLength = Integer.parseInt(headers.get("Content-Length"));
-        String requestBody = URLDecoder.decode(IOUtils.readData(br, contentLength), "utf-8");
+        String requestBody = URLDecoder.decode(IOUtils.readData(br, contentLength), StandardCharsets.UTF_8);
         params = HttpRequestUtils.parseQueryString(requestBody);
     }
 
@@ -84,7 +85,7 @@ public class HttpRequest {
         return this.path;
     }
 
-    public String getHeader(String key) {
+    String getHeader(String key) {
         return this.headers.get(key);
     }
 
@@ -101,5 +102,9 @@ public class HttpRequest {
             return Boolean.parseBoolean(getCookie("logined"));
         }
         return false;
+    }
+
+    public HttpSession getSession() {
+        return HttpSessions.getSession(getCookie(JSESSIONID));
     }
 }
