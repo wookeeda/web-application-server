@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.HttpRequest;
 import util.HttpResponse;
+import util.HttpSession;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,6 +19,11 @@ public class ListUserController extends AbstractController {
 
     @Override
     void doGet(HttpRequest request, HttpResponse response) throws IOException {
+        if (!isLogined(request.getSession())) {
+            response.sendRedirect("/user/login.html");
+            return;
+        }
+
         String path = request.getPath();
         if (!request.isLogined()) {
             response.sendRedirect("/user/login.html");
@@ -51,5 +57,10 @@ public class ListUserController extends AbstractController {
         }
         response.forwardBody(body.toString());
 
+    }
+
+    private boolean isLogined(HttpSession session) {
+        Object user = session.getAttribute("user");
+        return user != null;
     }
 }

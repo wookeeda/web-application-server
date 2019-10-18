@@ -10,8 +10,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.UUID;
 
 public class RequestHandler extends Thread {
+    private static final String JSESSIONID = "JSESSIONID";
     private static final Logger log = LoggerFactory.getLogger(RequestHandler.class);
     private Socket connection;
 
@@ -25,6 +27,10 @@ public class RequestHandler extends Thread {
         try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream()) {
             HttpRequest request = new HttpRequest(in);
             HttpResponse response = new HttpResponse(out);
+
+            if (request.getCookie(JSESSIONID) == null) {
+                response.addHeader("Set-Cookie", "JSESSIONID=" + UUID.randomUUID() + ";path=/");
+            }
 
             String path = request.getPath();
             Controller controller = RequestMapping.getController(path);
